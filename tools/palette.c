@@ -8,6 +8,7 @@
 #include <string.h>
 #include <math.h>
 
+#ifdef GAMMA
 double gamma(unsigned char val)
 {
 	double V = val;
@@ -25,6 +26,7 @@ double gamma(unsigned char val)
 
 	return V * 255.0;
 }
+#endif
 
 const double P1 = 200.0;
 const double P2 = 200.0;
@@ -61,18 +63,42 @@ int main(int argc, char **argv)
 		FILE *f = fopen(argv[1], "rb");
 		if (f != NULL)
 		{
-			fseek(f, 0x7a, SEEK_SET); // début palette
+			fseek(f, 0x0e, SEEK_SET);
+			unsigned char headsize = fgetc(f);
+
+			fseek(f, 0x1c, SEEK_SET);
+			unsigned char format = fgetc(f);
+
+			if (format!=4)
+			{
+				printf("l'image doit être au format 16 couleurs");
+			}
+
+			fseek(f, 0x2e, SEEK_SET);
+			unsigned char nbcols = fgetc(f);
+
+			fseek(f, headsize+14, SEEK_SET); // début palette 
 			printf("DEB%s\n", argv[2]);
-			for (int p=0; p<16; p++)
+			for (int p=0; p<nbcols; p++)
 			{
 				unsigned char b = fgetc(f);
 				unsigned char v = fgetc(f);
 				unsigned char r = fgetc(f);
 				unsigned char a = fgetc(f);
+#ifdef GAMMA
 				double gb = gamma(b);
 				double gv = gamma(v);
 				double gr = gamma(r);
+#else
+				double gb = b;
+				double gv = v;
+				double gr = r;
+#endif
 				printf("   FDB $%02x%02x * %02x %02x %02x\n", intensite(gb), intensite(gv)*16 + intensite(gr), r, v, b);
+			}
+			for (int p=nbcols; p<16; p++)
+			{
+				printf("   FDB $%02x%02x\n", 0, 0);
 			}
 			printf("FIN%s\n\n", argv[2]);
 			fclose(f);

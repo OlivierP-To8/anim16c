@@ -12,7 +12,7 @@ sapfs: $(OBJ_SAPFS)
 	gcc -s -o tools/sapfs $(OBJ_SAPFS)
 
 bmpanim: $(OBJ_BMPANIM) 
-	gcc -s -o tools/bmpanim $(OBJ_BMPANIM)
+	gcc -s -o tools/bmpanim $(OBJ_BMPANIM) -lm
 
 palette: $(OBJ_PAL) 
 	gcc -s -o tools/palette $(OBJ_PAL) -lm
